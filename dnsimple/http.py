@@ -36,7 +36,7 @@ class SmartRequests(object):
 
     def json_get(self, path):
         response = self.get(path, headers={'accept': 'application/json'})
-        if response.status_code == requests.codes.ok:
+        if response.ok:
             return simplejson.loads(response.content)
         else:
             raise RuntimeError('Request failed (%s): Content: %r, Headers: %r' % (response.status_code, response.content, response.headers))
