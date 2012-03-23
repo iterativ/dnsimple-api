@@ -57,7 +57,7 @@ class Domain(object):
             'record[prio]': prio,
         }
         response = self.dnsimple.requests.post('/domains/%s/records' % self.name, data)
-        if response.status_code == requests.codes.ok:
+        if response.status_code == requests.codes.created:
             uncache(self, 'records')
             return True
         else:
