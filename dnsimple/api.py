@@ -57,7 +57,7 @@ class Domain(object):
             'record[prio]': prio,
         }
         response = self.dnsimple.requests.post('/domains/%s/records' % self.name, data)
-        if response.status_code == requests.codes.created:
+        if response.ok:
             uncache(self, 'records')
             return True
         else:
@@ -90,7 +90,7 @@ class DNSimple(object):
             'domain[name]': name
         }
         response = self.requests.post('/domains', data)
-        if response.status_code == requests.codes.created:
+        if response.ok:
             uncache(self, 'domains')
             return True
         else:
