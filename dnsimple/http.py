@@ -26,16 +26,16 @@ class SmartRequests(object):
         return self.request('GET', path, **kwargs)
 
     def post(self, path, data, **kwargs):
-        return self.request('POST', path, **kwargs)
+        return self.request('POST', path, data=data, **kwargs)
 
     def put(self, path, data, **kwargs):
-        return self.request('PUT', path, **kwargs)
+        return self.request('PUT', path, data=data, **kwargs)
 
     def delete(self, path, **kwargs):
         return self.request('DELETE', path, **kwargs)
 
     def json_get(self, path):
-        response = self.get(path, headers={'Accept': 'application/json'})
+        response = self.get(path, headers={'accept': 'application/json'})
         if response.status_code == requests.codes.ok:
             return simplejson.loads(response.content)
         else:
