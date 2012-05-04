@@ -24,16 +24,16 @@ class SmartRequests(object):
         return self.session.request(method, self._url(path), **kwargs)
         
     def get(self, path, **kwargs):
-        return self.request('GET', path, **kwargs)
+        return self.request('GET', path, allow_redirects=True, **kwargs)
     
     def post(self, path, data, **kwargs):
-        return self.request('POST', path, **kwargs)
+        return self.request('POST', path, data=data, allow_redirects=True, **kwargs)
     
     def put(self, path, data, **kwargs):
-        return self.request('PUT', path, **kwargs)
+        return self.request('PUT', path, data=data, allow_redirects=True, **kwargs)
     
     def delete(self, path, **kwargs):
-        return self.request('DELETE', path, **kwargs)
+        return self.request('DELETE', path, allow_redirects=True, **kwargs)
     
     def json_get(self, path):
         response = self.get(path, headers={'Accept': 'application/json'})
