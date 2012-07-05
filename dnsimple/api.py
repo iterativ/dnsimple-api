@@ -164,7 +164,3 @@ class DNSimple(object):
         if not record:
             print("A-Record with no name not defined")
         return record.update(content=new_ip_address)
-
-    def test_method(self):
-        print('test')
-
