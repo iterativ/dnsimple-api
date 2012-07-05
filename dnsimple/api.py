@@ -71,6 +71,18 @@ class Domain(object):
     def delete(self):
         return self.dnsimple.requests.delete('/domains/%s.json' % self.id)
 
+    def apply_google_mail_template(self):
+        """googlemx is a standard template defined by DNSimple"""
+        return self.apply_template('googlemx')
+
+    def apply_template(self, template_short_name):
+        response = self.dnsimple.requests.post('/domains/%s/templates/%s/apply' % (self.id, template_short_name), {})
+        if response.ok:
+            uncache(self, 'records')
+            return True
+        else:
+            return False
+
 
 class DNSimple(object):
     domain = 'https://dnsimple.com'
@@ -98,3 +110,9 @@ class DNSimple(object):
 
     def checkdomain(self, name):
         return self.requests.json_get('/domains/%s/check' % name)
+
+    def list_templates(self):
+        self.requests.json_get('/templates')
+
+    def template_details(self, short_name):
+        self.requests.json_get('/templates/%s' % short_name)
