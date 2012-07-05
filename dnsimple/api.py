@@ -30,7 +30,7 @@ class Record(object):
         if prio:
             data['record[prio]'] = prio
         if data:
-            return self.dnsimple.requests.put('/domains/%s/records/%s' % (self.domain.id, self.id), data)
+            return self.dnsimple.requests.put('/domains/%s/records/%s' % (self.domain.id, self.id), data).ok
         else:
             logging.warning('Record not updated, no data provided')
             return None
@@ -87,6 +87,14 @@ class Domain(object):
             return True
         else:
             return False
+
+    def get_record_by_name_and_type(self, name, type):
+        for key in self.records:
+            record = self.records[key]
+            if record.name == name and record.record_type == type:
+                return record
+        return None
+
 
 
 class DNSimple(object):
