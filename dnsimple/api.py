@@ -6,7 +6,8 @@ https://dnsimple.com/documentation/api
 from dnsimple.http import SmartRequests
 from dnsimple.utils import simple_cached_property, uncache
 import logging
-import requests
+import re
+import sys
 
 
 class Record(object):
@@ -100,8 +101,20 @@ class Domain(object):
 class DNSimple(object):
     domain = 'https://dnsimple.com'
 
-    def __init__(self, username, password):
-        self.requests = SmartRequests(self.domain, username, password)
+    def __init__(self, email, api_token):
+        self.requests = SmartRequests(self.domain, email, api_token)
+
+    @classmethod
+    def with_auth_file(cls):
+        try:
+            passwordfile = open('.dnsimple').read()
+            email = re.findall(r'email:.*', passwordfile)[0].split(':')[1].strip()
+            api_token = re.findall(r'api_token:.*', passwordfile)[0].split(':')[1].strip()
+            return cls(email, api_token)
+        except:
+            print("""Could not open .dnsimple file - please provide a file .dnsimple with the content:
+                email: <dnsimple_email>
+                api_token: <dnsimple API token>""")
 
     @simple_cached_property
     def domains(self):

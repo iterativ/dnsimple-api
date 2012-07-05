@@ -8,14 +8,20 @@ import json
 
 
 class SmartRequests(object):
-    headers = {
-        'user-agent': 'DNSimple Python API (iterativ) %s' % __version__,
-        'accept': 'application/json'
-    }
 
-    def __init__(self, domain, username, password):
+    def __init__(self, domain, email, api_token):
         self.domain = domain
-        self.session = requests.session(headers=self.headers, auth=(username, password))
+        self.email = email
+        self.api_token = api_token
+        self.session = requests.session(headers=self._create_headers())
+
+    def _create_headers(self):
+        headers = {
+            'user-agent': 'DNSimple Python API (iterativ) %s' % __version__,
+            'accept': 'application/json',
+            'X-DNSimple-Token': '%s:%s' % (self.email, self.api_token),
+        }
+        return headers
 
     def _url(self, path):
         return '%s%s' % (self.domain, path)
