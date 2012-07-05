@@ -155,3 +155,13 @@ class DNSimple(object):
             return False
         return domain.add_record(sub_domain_name, 'CNAME', domain_name)
 
+    def migrate_domain_arecord_to_new_address(self, domain_name, new_ip_address):
+        domain = self.domains.get(domain_name)
+        if not domain:
+            print("Domain with name '%s' is unknown", domain_name)
+            return False
+        record = domain.get_record_by_name_and_type('', 'A')
+        if not record:
+            print("A-Record with no name not defined")
+        return record.update(content=new_ip_address)
+
