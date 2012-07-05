@@ -57,10 +57,12 @@ class Domain(object):
             'record[prio]': prio,
         }
         response = self.dnsimple.requests.post('/domains/%s/records' % self.name, data)
-        if response.ok:
+        if response.status_code == 201:
             uncache(self, 'records')
+            # print(response.content)
             return True
         else:
+            print(response.content)
             return False
 
     @simple_cached_property
@@ -73,7 +75,10 @@ class Domain(object):
 
     def apply_google_mail_template(self):
         """googlemx is a standard template defined by DNSimple"""
-        return self.apply_template('googlemx')
+        result = self.add_record('mail', 'CNAME', 'ghs.googlehosted.com')
+        if result:
+            return self.apply_template('googlemx')
+        return False
 
     def apply_template(self, template_short_name):
         response = self.dnsimple.requests.post('/domains/%s/templates/%s/apply' % (self.id, template_short_name), {})
@@ -102,10 +107,11 @@ class DNSimple(object):
             'domain[name]': name
         }
         response = self.requests.post('/domains', data)
-        if response.ok:
+        if response.status_code == 201:
             uncache(self, 'domains')
             return True
         else:
+            print(response.content)
             return False
 
     def checkdomain(self, name):
@@ -116,3 +122,20 @@ class DNSimple(object):
 
     def template_details(self, short_name):
         self.requests.json_get('/templates/%s' % short_name)
+
+    def create_standard_domain(self, name, ip_address):
+        """creates a new domain and adds 'www' and 'stage' subdomain and applies the
+           Google-Mail template which setups the google mail"""
+        result = self.create_domain(name)
+        if not result:
+            return False
+        domain = self.domains.get(name)
+        if not domain:
+            return False
+        if not domain.add_record('', 'A', ip_address):
+            return False
+        if not domain.add_record('www', 'CNAME', name):
+            return False
+        if not domain.add_record('stage', 'CNAME', name):
+            return False
+        return domain.apply_google_mail_template()
