@@ -28,7 +28,6 @@ setup(
     license='BSD',
     packages=find_packages(),
     install_requires=[
-        'simplejson',
         'requests>=0.7.2'
     ],
     include_package_data=True,

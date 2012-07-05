@@ -4,7 +4,7 @@ Important note: Kenneth Reitz is awesome!
 """
 from dnsimple import __version__
 import requests
-import simplejson
+import json
 
 
 class SmartRequests(object):
@@ -37,6 +37,6 @@ class SmartRequests(object):
     def json_get(self, path):
         response = self.get(path, headers={'accept': 'application/json'})
         if response.ok:
-            return simplejson.loads(response.content)
+            return json.loads(response.content)
         else:
             raise RuntimeError('Request failed (%s): Content: %r, Headers: %r' % (response.status_code, response.content, response.headers))
