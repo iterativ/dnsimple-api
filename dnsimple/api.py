@@ -139,3 +139,11 @@ class DNSimple(object):
         if not domain.add_record('stage', 'CNAME', name):
             return False
         return domain.apply_google_mail_template()
+
+    def create_cname_subdomain(self, domain_name, sub_domain_name):
+        domain = self.domains.get(domain_name)
+        if not domain:
+            print("Domain with name '%s' is unknown", domain_name)
+            return False
+        return domain.add_record(sub_domain_name, 'CNAME', domain_name)
+
