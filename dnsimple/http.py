@@ -9,7 +9,8 @@ import json
 
 class SmartRequests(object):
     headers = {
-        'user-agent': 'DNSimple Python API (ojii) %s' % __version__
+        'user-agent': 'DNSimple Python API (ojii) %s' % __version__,
+        'accept': 'application/json'
     }
 
     def __init__(self, domain, username, password):
