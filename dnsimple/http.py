@@ -42,7 +42,7 @@ class SmartRequests(object):
         return self.request('DELETE', path, allow_redirects=True, **kwargs)
     
     def json_get(self, path):
-        response = self.get(path, headers={'accept': 'application/json'})
+        response = self.get(path)
         if response.ok:
             return json.loads(response.content)
         else:

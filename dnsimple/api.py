@@ -8,6 +8,7 @@ from dnsimple.utils import simple_cached_property, uncache
 import logging
 import re
 import os
+import json
 
 
 class Record(object):
@@ -63,7 +64,7 @@ class Domain(object):
             # print(response.content)
             return True
         else:
-            print(response.content)
+            logger.warn(response.content)
             return False
 
     @simple_cached_property
@@ -116,7 +117,7 @@ class DNSimple(object):
         if not passwordfile:
             passwordfile = try_open_file(os.path.expanduser("~/.dnsimple"))
         if not passwordfile:
-            print("""Could not open .dnsimple file - please provide a file .dnsimple in the current directory or in
+            logging.warning("""Could not open .dnsimple file - please provide a file .dnsimple in the current directory or in
                 the home directory with the content:
                 email: <dnsimple_email>
                 api_token: <dnsimple API token>""")
@@ -142,17 +143,26 @@ class DNSimple(object):
             uncache(self, 'domains')
             return True
         else:
-            print(response.content)
+            logger.warn(response.content)
             return False
 
     def checkdomain(self, name):
         return self.requests.json_get('/domains/%s/check' % name)
 
-    def list_templates(self):
-        self.requests.json_get('/templates')
+    def get(self, path):
+        return self.requests.json_get(path)
 
-    def template_details(self, short_name):
-        self.requests.json_get('/templates/%s' % short_name)
+    def post(self, path, data):
+        response = self.request.post(path, data)
+        return json.loads(response.content)
+
+    def put(self, path, data):
+        response = self.request.post(path, data)
+        return json.loads(response.content)
+
+    def delete(self, path):
+        response = self.requests.delete(path)
+        return json.loads(response.content)
 
     def create_standard_domain(self, name, ip_address):
         """creates a new domain and adds 'www' and 'stage' subdomain and applies the
@@ -174,16 +184,16 @@ class DNSimple(object):
     def create_cname_subdomain(self, domain_name, sub_domain_name):
         domain = self.domains.get(domain_name)
         if not domain:
-            print("Domain with name '%s' is unknown", domain_name)
+            logger.warn("Domain with name '%s' is unknown", domain_name)
             return False
         return domain.add_record(sub_domain_name, 'CNAME', domain_name)
 
     def migrate_domain_arecord_to_new_address(self, domain_name, new_ip_address):
         domain = self.domains.get(domain_name)
         if not domain:
-            print("Domain with name '%s' is unknown", domain_name)
+            logger.warn("Domain with name '%s' is unknown", domain_name)
             return False
         record = domain.get_record_by_name_and_type('', 'A')
         if not record:
-            print("A-Record with no name not defined")
+            logger.warn("A-Record with no name not defined")
         return record.update(content=new_ip_address)
