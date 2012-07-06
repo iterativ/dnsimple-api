@@ -64,7 +64,7 @@ class Domain(object):
             # print(response.content)
             return True
         else:
-            logger.warn(response.content)
+            logging.warn(response.content)
             return False
 
     @simple_cached_property
@@ -143,7 +143,7 @@ class DNSimple(object):
             uncache(self, 'domains')
             return True
         else:
-            logger.warn(response.content)
+            logging.warn(response.content)
             return False
 
     def checkdomain(self, name):
@@ -184,16 +184,16 @@ class DNSimple(object):
     def create_cname_subdomain(self, domain_name, sub_domain_name):
         domain = self.domains.get(domain_name)
         if not domain:
-            logger.warn("Domain with name '%s' is unknown", domain_name)
+            logging.warn("Domain with name '%s' is unknown", domain_name)
             return False
         return domain.add_record(sub_domain_name, 'CNAME', domain_name)
 
     def migrate_domain_arecord_to_new_address(self, domain_name, new_ip_address):
         domain = self.domains.get(domain_name)
         if not domain:
-            logger.warn("Domain with name '%s' is unknown", domain_name)
+            logging.warn("Domain with name '%s' is unknown", domain_name)
             return False
         record = domain.get_record_by_name_and_type('', 'A')
         if not record:
-            logger.warn("A-Record with no name not defined")
+            logging.warn("A-Record with no name not defined")
         return record.update(content=new_ip_address)
