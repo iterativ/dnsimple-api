@@ -112,9 +112,9 @@ class DNSimple(object):
 
     @classmethod
     def with_auth_file(cls):
-        passwordfile = try_open_file(os.path.expanduser("~/.dnsimple"))
+        passwordfile = try_open_file(".dnsimple")
         if not passwordfile:
-            passwordfile = try_open_file(".dnsimple")
+            passwordfile = try_open_file(os.path.expanduser("~/.dnsimple"))
         if not passwordfile:
             print("""Could not open .dnsimple file - please provide a file .dnsimple in the current directory or in
                 the home directory with the content:
