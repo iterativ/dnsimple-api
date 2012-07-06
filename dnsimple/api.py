@@ -7,7 +7,7 @@ from dnsimple.http import SmartRequests
 from dnsimple.utils import simple_cached_property, uncache
 import logging
 import re
-import sys
+import os
 
 
 class Record(object):
@@ -96,7 +96,13 @@ class Domain(object):
                 return record
         return None
 
-
+def try_open_file(filepath):
+    try:
+        with open(filepath) as f:
+            return f.read()
+    except IOError as e:
+        # file does not exists
+        return None
 
 class DNSimple(object):
     domain = 'https://dnsimple.com'
@@ -106,15 +112,19 @@ class DNSimple(object):
 
     @classmethod
     def with_auth_file(cls):
-        try:
-            passwordfile = open('.dnsimple').read()
-            email = re.findall(r'email:.*', passwordfile)[0].split(':')[1].strip()
-            api_token = re.findall(r'api_token:.*', passwordfile)[0].split(':')[1].strip()
-            return cls(email, api_token)
-        except:
-            print("""Could not open .dnsimple file - please provide a file .dnsimple with the content:
+        passwordfile = try_open_file(os.path.expanduser("~/.dnsimple"))
+        if not passwordfile:
+            passwordfile = try_open_file(".dnsimple")
+        if not passwordfile:
+            print("""Could not open .dnsimple file - please provide a file .dnsimple in the current directory or in
+                the home directory with the content:
                 email: <dnsimple_email>
                 api_token: <dnsimple API token>""")
+            return
+
+        email = re.findall(r'email:.*', passwordfile)[0].split(':')[1].strip()
+        api_token = re.findall(r'api_token:.*', passwordfile)[0].split(':')[1].strip()
+        return cls(email, api_token)
 
     @simple_cached_property
     def domains(self):
