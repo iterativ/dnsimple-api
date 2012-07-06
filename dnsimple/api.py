@@ -73,7 +73,7 @@ class Domain(object):
         return dict([(data['record']['id'], Record(self, data['record'])) for data in records])
 
     def delete(self):
-        return self.dnsimple.requests.delete('/domains/%s.json' % self.id)
+        return self.dnsimple.requests.delete('/domains/%s' % self.id)
 
     def apply_google_mail_template(self):
         """googlemx is a standard template defined by DNSimple"""
@@ -94,6 +94,13 @@ class Domain(object):
         for key in self.records:
             record = self.records[key]
             if record.name == name and record.record_type == type:
+                return record
+        return None
+
+    def get_record_by_name(self, name):
+        for key in self.records:
+            record = self.records[key]
+            if record.name == name:
                 return record
         return None
 
@@ -132,7 +139,7 @@ class DNSimple(object):
         """
         Get a list of all domains in your account.
         """
-        return dict([(data['domain']['name'], Domain(self, data['domain'])) for data in self.requests.json_get('/domains.json')])
+        return dict([(data['domain']['name'], Domain(self, data['domain'])) for data in self.requests.json_get('/domains')])
 
     def create_domain(self, name):
         data = {
@@ -181,19 +188,40 @@ class DNSimple(object):
             return False
         return domain.apply_google_mail_template()
 
-    def create_cname_subdomain(self, domain_name, sub_domain_name):
+    def get_domain_or_warn(self, domain_name):
         domain = self.domains.get(domain_name)
         if not domain:
             logging.warn("Domain with name '%s' is unknown", domain_name)
-            return False
-        return domain.add_record(sub_domain_name, 'CNAME', domain_name)
+        return domain
+
+    def create_cname_subdomain(self, domain_name, sub_domain_name):
+        domain = self.get_domain_or_warn(domain_name)
+        if domain:
+            return domain.add_record(sub_domain_name, 'CNAME', domain_name)
+        return False
+
+    def create_record_subdomain(self, domain_name, record_name, record_type, content):
+        domain = self.get_domain_or_warn(domain_name)
+        if domain:
+           return domain.add_record(record_name, record_type, content)
+        return False
+
+    def delete_record_from_domain(self, domain_name, record_name):
+        domain = self.get_domain_or_warn(domain_name)
+        if domain:
+            record = domain.get_record_by_name(record_name)
+            if not record:
+                logging.warn("Record with record_name %s not found", record_name)
+            return record.delete().ok
+        return False
 
     def migrate_domain_arecord_to_new_address(self, domain_name, new_ip_address):
-        domain = self.domains.get(domain_name)
-        if not domain:
-            logging.warn("Domain with name '%s' is unknown", domain_name)
-            return False
-        record = domain.get_record_by_name_and_type('', 'A')
-        if not record:
-            logging.warn("A-Record with no name not defined")
-        return record.update(content=new_ip_address)
+        domain = self.get_domain_or_warn(domain_name)
+        if domain:
+            record = domain.get_record_by_name_and_type('', 'A')
+            if not record:
+                logging.warn("A-Record with no name not defined")
+                return False
+            return record.update(content=new_ip_address)
+        return False
+
